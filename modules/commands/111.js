@@ -26,7 +26,7 @@ if (module.exports.config.credits !== CREATOR_LOCK) {
 }
 
 // ================= API CONFIG =================
-const GROQ_API_KEY = "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";
+const GROQ_API_KEY = "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";
 const MODEL_NAME = "llama-3.3-70b-versatile";
 
 const history = {};
@@ -59,7 +59,6 @@ module.exports.handleEvent = async function ({ api, event }) {
 
   const text = body.toLowerCase().trim();
 
-  // 🔥 AI bolo special
   if (text === "ai bolo") {
     let reply = "আমি JIHAD AI";
 
@@ -90,7 +89,6 @@ module.exports.handleEvent = async function ({ api, event }) {
     }
   }
 
-  // ================= GET USER GENDER =================
   let gender = "unknown";
 
   try {
@@ -99,22 +97,18 @@ module.exports.handleEvent = async function ({ api, event }) {
 
     if (user.gender === 2) gender = "male";
     else if (user.gender === 1) gender = "female";
-  } catch (e) {
-    console.log("Gender detect error:", e.message);
-  }
+  } catch (e) {}
 
-  // ================= HISTORY =================
   if (!history[senderID]) history[senderID] = [];
   history[senderID].push(`User: ${userMessage}`);
   if (history[senderID].length > 6) history[senderID].shift();
 
-  // ================= STYLE BASED ON GENDER =================
   let genderStyle = "";
 
   if (gender === "male") {
-    genderStyle = "User is male. Talk like a smart bro style, friendly, confident, no romantic/flirty tone.";
+    genderStyle = "User is male. Talk like a smart bro style.";
   } else if (gender === "female") {
-    genderStyle = "User is female. Talk romantic, flirty, smooth and classy.";
+    genderStyle = "User is female. Talk romantic, flirty.";
   } else {
     genderStyle = "Talk normal smart style.";
   }
@@ -127,14 +121,8 @@ module.exports.handleEvent = async function ({ api, event }) {
       {
         model: MODEL_NAME,
         messages: [
-          {
-            role: "system",
-            content: "You are smart, confident, and adaptive based on user gender."
-          },
-          {
-            role: "user",
-            content: finalPrompt
-          }
+          { role: "system", content: "You are smart AI." },
+          { role: "user", content: finalPrompt }
         ],
         temperature: 0.8,
         max_tokens: 120
@@ -149,14 +137,14 @@ module.exports.handleEvent = async function ({ api, event }) {
 
     let reply =
       response.data?.choices?.[0]?.message?.content ||
-      "তুমি চুপ থাকলে আমি কিন্তু বেশি ভাবি 😏";
+      "চুপ থাকলে কিন্তু ভাবি 😏";
 
     if (!/[.!?।]$/.test(reply.trim())) {
       reply = reply.trim() + ".";
     }
 
     if (senderID === VIP_UID) {
-      reply = "𝓗𝓮𝓵𝓵𝓸 𝓓𝓮𝓿𝓮𝓵𝓸𝓹𝓮𝓻 𝓢𝓲𝓻👑🔥\n" + reply;
+      reply = "👑🔥\n" + reply;
     }
 
     history[senderID].push(`Bot: ${reply}`);
@@ -164,12 +152,6 @@ module.exports.handleEvent = async function ({ api, event }) {
     return api.sendMessage(reply, threadID, messageID);
 
   } catch (err) {
-    console.error(err.response?.data || err.message);
-
-    return api.sendMessage(
-      "",
-      threadID,
-      messageID
-    );
+    return api.sendMessage("API error 😐", threadID, messageID);
   }
 };
